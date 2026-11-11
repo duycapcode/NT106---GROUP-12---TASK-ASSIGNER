@@ -44,6 +44,8 @@ const filters = reactive({
   /** Người phụ trách được chọn; 'none' = chưa giao */
   assignees: [] as string[],
   mine: false,
+  /** Chỉ một trạng thái (mở từ Tổng quan / Thống kê) */
+  status: null as TaskStatus | null,
 })
 
 const sort = reactive({ key: 'order' as SortKey, dir: 1 as 1 | -1 })
@@ -100,12 +102,13 @@ export function useTaskView() {
   }
 
   const filtersActive = computed(
-    () => !!filters.query.trim() || !!filters.priority || filters.assignees.length > 0 || filters.mine,
+    () => !!filters.query.trim() || !!filters.priority || filters.assignees.length > 0 || filters.mine || !!filters.status,
   )
 
   function matches(t: Task, ignoreAssignees = false): boolean {
     if (filters.projectId && t.projectId !== filters.projectId) return false
     if (filters.priority && t.priority !== filters.priority) return false
+    if (filters.status && t.status !== filters.status) return false
     if (!ignoreAssignees && filters.assignees.length && !filters.assignees.includes(t.assigneeId ?? 'none')) return false
     if (filters.mine && t.assigneeId !== meId.value && t.reviewerId !== meId.value) return false
     const q = normalize(filters.query.trim())
@@ -220,7 +223,7 @@ export function useTaskView() {
 
   /** Việc của một làn ở chế độ danh sách (đã sắp xếp; ẩn việc hoàn tất nếu chưa mở). */
   function rows(lane: Lane): { visible: Task[]; hiddenDone: number } {
-    const showDone = prefs.showDone.includes(lane.key) || filters.mine || !!filters.query.trim()
+    const showDone = prefs.showDone.includes(lane.key) || filters.mine || filters.status === 'done' || !!filters.query.trim()
     const list = [...lane.tasks].sort(compare)
     const visible = showDone ? list : list.filter((t) => t.status !== 'done')
     return { visible, hiddenDone: list.length - visible.length }
@@ -285,6 +288,7 @@ export function useTaskView() {
     filters.priority = null
     filters.assignees = []
     filters.mine = false
+    filters.status = null
   }
 
   return {

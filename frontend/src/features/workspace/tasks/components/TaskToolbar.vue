@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import AppIcon from '@/shared/components/AppIcon.vue'
 import ToggleSwitch from '../../components/ToggleSwitch.vue'
-import { PRIORITY_ORDER, PRIORITY_SHORT } from '../../data/constants'
+import { PRIORITY_ORDER, PRIORITY_SHORT, STATUS_LABELS } from '../../data/constants'
 import { useTasks } from '../taskStore'
 import { GROUP_BY_LABELS, type GroupBy, useTaskView, type ViewMode } from '../useTaskView'
 import PriorityBadge from './PriorityBadge.vue'
@@ -205,6 +205,19 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
         <span>Chỉ việc của tôi</span>
         <ToggleSwitch v-model="view.filters.mine" label="Chỉ việc của tôi" data-test="filter-mine" />
       </label>
+
+      <button
+        v-if="view.filters.status"
+        type="button"
+        class="tk-btn tk-btn--sm tb__status"
+        data-test="filter-status"
+        :aria-label="`Bỏ lọc trạng thái ${STATUS_LABELS[view.filters.status]}`"
+        @click="view.filters.status = null"
+      >
+        <span class="tk-dot" :class="`tk-dot--${view.filters.status}`" />
+        {{ STATUS_LABELS[view.filters.status] }}
+        <AppIcon name="x" :size="14" />
+      </button>
 
       <button v-if="view.filtersActive.value" type="button" class="tk-btn tk-btn--ghost tk-btn--sm tb__clear" data-test="clear-filters" @click="view.clearFilters()">
         <AppIcon name="x" :size="15" /> Xoá lọc
