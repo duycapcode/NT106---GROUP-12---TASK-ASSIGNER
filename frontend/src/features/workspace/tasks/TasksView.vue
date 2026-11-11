@@ -91,6 +91,22 @@ watch(
   },
 )
 
+/* Liên kết từ Tổng quan / Thống kê: ?status=review · ?mine=1 (áp dụng một lần rồi gỡ khỏi URL) */
+watch(
+  () => [route.query.status, route.query.mine] as const,
+  ([status, mine]) => {
+    if (status === undefined && mine === undefined) return
+    if (typeof status === 'string' && (view.STATUS_ORDER as string[]).includes(status)) {
+      view.filters.status = status as Task['status']
+      // Lọc một trạng thái thì danh sách dễ đọc hơn bảng 4 cột
+      view.prefs.view = 'list'
+    }
+    if (mine !== undefined) view.filters.mine = mine === '1'
+    setQuery({ status: undefined, mine: undefined })
+  },
+  { immediate: true },
+)
+
 function openTask(task: Task): void {
   setQuery({ task: taskCode(task) })
 }

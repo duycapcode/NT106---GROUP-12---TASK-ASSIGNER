@@ -17,7 +17,6 @@ export const NAV_ITEMS: NavItem[] = [
   { name: 'settings', label: 'Cài đặt', icon: 'settings' },
 ]
 
-const comingSoon = () => import('./views/ComingSoonView.vue')
 const groupChat = () => import('./groups/views/GroupChatView.vue')
 
 /** Khu vực làm việc sau khi đăng nhập: sidebar + topbar (WorkspaceLayout). */
@@ -63,7 +62,12 @@ export const workspaceRoutes: RouteRecordRaw[] = [
         component: () => import('./groups/views/GroupSettingsView.vue'),
         meta: { title: 'Cài đặt nhóm', nav: 'team', fill: true, view: 'group-settings' },
       },
-      { path: 'reports', name: 'reports', component: comingSoon, meta: { title: 'Thống kê', nav: 'reports' } },
+      {
+        path: 'reports',
+        name: 'reports',
+        component: () => import('./views/ReportsView.vue'),
+        meta: { title: 'Thống kê', nav: 'reports' },
+      },
       {
         path: 'profile',
         name: 'profile',
