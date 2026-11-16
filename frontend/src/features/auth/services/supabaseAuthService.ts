@@ -9,7 +9,7 @@ let passwordRecoveryActive = false
 
 const RECOVERY_KEY = 'taskflow:password-recovery'
 
-function getClient(): ReturnType<typeof createClient> {
+export function getClient(): ReturnType<typeof createClient> {
   if (client) return client
 
   const url = import.meta.env.VITE_SUPABASE_URL?.trim()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AppIcon from '@/shared/components/AppIcon.vue'
 import BaseButton from '@/shared/components/BaseButton.vue'
 import AvatarModal from '../components/AvatarModal.vue'
@@ -10,8 +10,23 @@ import UserAvatar from '../components/UserAvatar.vue'
 import { useProfile } from '../composables/useProfile'
 import { useWorkspace } from '../composables/useWorkspace'
 import { formatMonthYear, formatNumber, formatPercent, formatTimezone } from '../utils/format'
+import { getMyProfile } from '@/services/UserService'
 
 const { user, isGuest, profile, initials } = useProfile()
+const databaseName = ref('')
+onMounted(async() => {
+  if (isGuest.value) return
+  try{
+    const result = await getMyProfile()
+    databaseName.value = result.Username 
+    console.log('Hồ sơ từ supabase', result)
+  }
+  catch (error){
+    console.error('Lỗi đọc về hồ sơ',error)
+  }
+
+} )
+
 const { statusCounts, weeklyFocus, activity } = useWorkspace()
 
 const editingAvatar = ref(false)
@@ -52,7 +67,7 @@ const info = computed(() => [
 
         <div class="hero__info">
           <div class="hero__name-row">
-            <h2 class="hero__name">{{ profile.displayName }}</h2>
+            <h2 class="hero__name">{{ databaseName || profile.displayName }}</h2>
             <span class="hero__badge">{{ isGuest ? 'Khách' : 'Thành viên' }}</span>
           </div>
           <p class="hero__meta">
