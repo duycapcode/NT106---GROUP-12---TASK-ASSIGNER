@@ -1,10 +1,15 @@
-import type { AuthService } from './AuthService'
-import { httpAuthService } from './httpAuthService'
-import { mockAuthService } from './mockAuthService'
+import { supabaseAuthService } from './supabaseAuthService'
 
-/** Mặc định dùng dữ liệu giả lập; đặt VITE_USE_MOCK_API=false để gọi API thật. */
-export const authService: AuthService =
-  import.meta.env.VITE_USE_MOCK_API === 'false' ? httpAuthService : mockAuthService
+type AuthProvider = 'supabase'
+
+const services: Record<AuthProvider, AuthService> = {
+  supabase: supabaseAuthService,
+}
+
+const requestedProvider = import.meta.env.VITE_AUTH_PROVIDER
+
+export const authService = services[requestedProvider]
 
 export { AuthError } from './AuthError'
 export type { AuthService } from './AuthService'
+
