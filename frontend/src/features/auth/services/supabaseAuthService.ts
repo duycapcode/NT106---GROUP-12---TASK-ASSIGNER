@@ -1,15 +1,21 @@
-import { createClient, type Session, type User as SupabaseUser } from '@supabase/supabase-js'
+import {
+  createClient,
+  type SupabaseClient,
+  type Session,
+  type User as SupabaseUser,
+} from '@supabase/supabase-js'
+
 import { AuthError } from './AuthError'
 import type { AuthService } from './AuthService'
 import type { AuthSession, User } from '@/features/auth/types'
 
-let client: ReturnType<typeof createClient> | undefined
+let client: SupabaseClient | undefined
 let rememberSession = true
 let passwordRecoveryActive = false
 
 const RECOVERY_KEY = 'taskflow:password-recovery'
 
-export function getClient(): ReturnType<typeof createClient> {
+export function getClient(): SupabaseClient {
   if (client) return client
 
   const url = import.meta.env.VITE_SUPABASE_URL?.trim()

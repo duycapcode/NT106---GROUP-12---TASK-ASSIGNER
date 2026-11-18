@@ -10,19 +10,20 @@ import UserAvatar from '../components/UserAvatar.vue'
 import { useProfile } from '../composables/useProfile'
 import { useWorkspace } from '../composables/useWorkspace'
 import { formatMonthYear, formatNumber, formatPercent, formatTimezone } from '../utils/format'
-import { getMyProfile } from '@/services/UserService'
 
-const { user, isGuest, profile, initials } = useProfile()
-const databaseName = ref('')
+const { user, isGuest, profile, initials, refresh } = useProfile()
+const loadingProfile = ref(!isGuest.value)
+const profileError = ref('')
 onMounted(async() => {
-  if (isGuest.value) return
   try{
-    const result = await getMyProfile()
-    databaseName.value = result.Username 
-    console.log('Hồ sơ từ supabase', result)
+    await refresh()
   }
   catch (error){
     console.error('Lỗi đọc về hồ sơ',error)
+    const detail = error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Hãy thử tải lại trang.'
+    profileError.value = `Không đọc được hồ sơ từ Supabase: ${detail}`
+  } finally {
+    loadingProfile.value = false
   }
 
 } )
@@ -47,6 +48,7 @@ const info = computed(() => [
       <h1 class="ws-title">Hồ sơ cá nhân</h1>
       <p class="ws-subtitle">Quản lý thông tin cá nhân và hoạt động của bạn.</p>
     </header>
+    <p v-if="profileError" role="alert">{{ profileError }}</p>
 
     <section class="hero" aria-label="Tóm tắt hồ sơ">
       <div class="hero__banner" aria-hidden="true">
@@ -67,7 +69,7 @@ const info = computed(() => [
 
         <div class="hero__info">
           <div class="hero__name-row">
-            <h2 class="hero__name">{{ databaseName || profile.displayName }}</h2>
+            <h2 class="hero__name">{{ loadingProfile ? 'Đang tải hồ sơ…' : profile.displayName }}</h2>
             <span class="hero__badge">{{ isGuest ? 'Khách' : 'Thành viên' }}</span>
           </div>
           <p class="hero__meta">
@@ -76,7 +78,7 @@ const info = computed(() => [
           </p>
         </div>
 
-        <BaseButton class="ws-btn-auto hero__edit" :disabled="isGuest" @click="editingProfile = true">
+        <BaseButton class="ws-btn-auto hero__edit" :disabled="isGuest || loadingProfile || !!profileError" @click="editingProfile = true">
           <AppIcon name="pencil" :size="17" />
           Chỉnh sửa hồ sơ
         </BaseButton>

@@ -1,5 +1,5 @@
 import { nextTick, reactive, ref, shallowRef, watch } from 'vue'
-import { AuthError } from '@/services/AuthError'
+import { AuthError } from '@/features/auth/services/AuthError'
 import { getErrorMessage } from '@/utils/errors'
 import type { ValidationResult } from '@/utils/validators'
 

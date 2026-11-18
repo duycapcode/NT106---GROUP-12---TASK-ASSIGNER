@@ -1,5 +1,5 @@
 import { computed, shallowRef } from 'vue'
-import { authService } from '@/services'
+import { authService } from '@/features/auth/services'
 import type { AuthSession, LoginPayload, RegisterPayload, ResetPasswordPayload } from '@/types/auth'
 
 const SESSION_KEY = 'taskflow:session'

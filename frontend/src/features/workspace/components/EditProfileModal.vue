@@ -6,9 +6,10 @@ import BaseModal from './BaseModal.vue'
 
 const open = defineModel<boolean>('open', { required: true })
 
-const { profile, update } = useProfile()
+const { profile, save } = useProfile()
 const form = reactive({ displayName: '', jobTitle: '', timezone: '' })
 const error = ref('')
+const saving = ref(false)
 
 const timezones = (() => {
   try {
@@ -29,15 +30,36 @@ watch(open, (isOpen) => {
   error.value = ''
 })
 
-function submit(): void {
+async function submit() {
+  if (saving.value) return
   const displayName = form.displayName.trim()
+
   if (!displayName) {
     error.value = 'Nhập họ và tên.'
     return
   }
-  update({ displayName, jobTitle: form.jobTitle.trim(), timezone: form.timezone })
-  open.value = false
+
+  error.value = ''
+  saving.value = true
+
+  try {
+    await save({
+      displayName,
+      jobTitle: form.jobTitle.trim(),
+      timezone: form.timezone,
+    })
+
+    open.value = false
+  } catch (err) {
+    console.error('Lỗi lưu hồ sơ:', err)
+    const detail = err && typeof err === 'object' && 'message' in err ? String(err.message) : 'Hãy thử lại.'
+    error.value = `Không lưu được hồ sơ: ${detail}`
+  } finally {
+    saving.value = false
+  }
 }
+  
+
 </script>
 
 <template>
@@ -68,8 +90,8 @@ function submit(): void {
       </div>
     </form>
     <template #footer>
-      <BaseButton variant="secondary" class="ws-btn-auto" @click="open = false">Huỷ</BaseButton>
-      <BaseButton type="submit" form="edit-profile" class="ws-btn-auto">Lưu thay đổi</BaseButton>
+      <BaseButton variant="secondary" class="ws-btn-auto" :disabled="saving" @click="open = false">Huỷ</BaseButton>
+      <BaseButton type="submit" form="edit-profile" class="ws-btn-auto" :loading="saving">Lưu thay đổi</BaseButton>
     </template>
   </BaseModal>
 </template>
