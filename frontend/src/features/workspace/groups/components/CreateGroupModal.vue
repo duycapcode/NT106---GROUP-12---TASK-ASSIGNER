@@ -3,36 +3,36 @@ import { computed, ref, watch } from 'vue'
 import AppIcon from '@/shared/components/AppIcon.vue'
 import BaseButton from '@/shared/components/BaseButton.vue'
 import BaseModal from '../../components/BaseModal.vue'
-import { DISCOVER_GROUPS, GROUP_COLORS, GROUP_TEMPLATES } from '../data'
+import { DISCOVER_GROUPS, GROUP_COLORS} from '../data'
 import { useGroups } from '../useGroups'
-import type { Group, GroupTemplate } from '../types'
+import type { Group } from '../types'
 import GroupIcon from './GroupIcon.vue'
 import MemberSelect from './MemberSelect.vue'
 
 const open = defineModel<boolean>('open', { required: true })
-const props = withDefaults(defineProps<{ initialTab?: 'create' | 'join' }>(), { initialTab: 'create' })
+const props = withDefaults(defineProps<{ initialTab?: 'create' | 'join'; createOnly?: boolean }>(), { initialTab: 'create', createOnly: false })
 const emit = defineEmits<{ created: [group: Group] }>()
 
 const store = useGroups()
-const tab = ref<'create' | 'join'>(props.initialTab)
-const template = ref<GroupTemplate>('project')
+const tab = ref<'create' | 'join'>(props.createOnly ? 'create' : props.initialTab)
 const name = ref('')
 const description = ref('')
 const color = ref(GROUP_COLORS[0])
 const members = ref<string[]>([])
 const code = ref('')
 const error = ref('')
+const inviteCode = ref('')
 
 watch(open, (isOpen) => {
   if (!isOpen) return
-  tab.value = props.initialTab
-  template.value = 'project'
+  tab.value = props.createOnly ? 'create' : props.initialTab
   name.value = ''
   description.value = ''
   color.value = GROUP_COLORS[store.groups.value.length % GROUP_COLORS.length]
   members.value = []
   code.value = ''
   error.value = ''
+  inviteCode.value = ''
 })
 watch(tab, () => (error.value = ''))
 
@@ -72,7 +72,7 @@ function joinWith(value: string): void {
     :title="tab === 'create' ? 'Tạo nhóm mới' : 'Tham gia nhóm'"
     :description="tab === 'create' ? 'Nhóm là nơi bạn và mọi người trò chuyện, chia việc và họp.' : 'Nhập mã mời hoặc chọn một nhóm công khai.'"
   >
-    <div class="tabs" role="tablist" aria-label="Tạo hoặc tham gia">
+    <div v-if="!createOnly" class="tabs" role="tablist" aria-label="Tạo hoặc tham gia">
       <button type="button" role="tab" :aria-selected="tab === 'create'" class="tabs__btn" :class="{ 'is-active': tab === 'create' }" @click="tab = 'create'">
         <AppIcon name="plus" :size="16" /> Tạo nhóm
       </button>
@@ -91,17 +91,7 @@ function joinWith(value: string): void {
 
     <form id="group-form" class="form" novalidate @submit.prevent="submit">
       <template v-if="tab === 'create'">
-        <fieldset class="templates">
-          <legend class="ws-label">Chọn mẫu</legend>
-          <label v-for="t in GROUP_TEMPLATES" :key="t.id" class="tpl" :class="{ 'is-on': template === t.id }">
-            <input v-model="template" type="radio" name="tpl" :value="t.id" class="visually-hidden" />
-            <span class="tpl__icon"><AppIcon :name="t.icon" :size="20" /></span>
-            <span class="tpl__text">
-              <strong>{{ t.label }}</strong>
-              <small>{{ t.description }}</small>
-            </span>
-          </label>
-        </fieldset>
+        
 
         <div class="row">
           <GroupIcon :group="{ name: name || 'Nhóm', color, icon: null }" :size="56" />
@@ -135,8 +125,19 @@ function joinWith(value: string): void {
           <label class="ws-label" for="g-desc">Mô tả (không bắt buộc)</label>
           <input id="g-desc" v-model="description" class="ws-input" maxlength="160" placeholder="Nhóm này dùng để làm gì?" />
         </div>
+        <div>
+          <label class="ws-label" for="g-invite-code">
+            Mã tham gia nhóm
+          </label>
 
-        <MemberSelect v-model="members" label="Thêm thành viên" />
+          <input
+            id="g-invite-code"
+            v-model="inviteCode"
+            class="ws-input"
+            placeholder="Chưa có mã tham gia"
+            
+          />
+        </div>
       </template>
 
       <template v-else>
@@ -168,7 +169,7 @@ function joinWith(value: string): void {
           </ul>
         </div>
       </template>
-
+        
       <p v-if="error" class="error" role="alert" data-test="group-error">{{ error }}</p>
     </form>
 

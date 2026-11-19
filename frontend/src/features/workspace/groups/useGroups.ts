@@ -620,6 +620,7 @@ export function useGroups() {
     replyToId?: string | null
     threadParentId?: string | null
     attachments?: Attachment[]
+    autoReply?: boolean
   }
 
   function canPost(groupId: string, channelId: string): ActionResult<null> {
@@ -668,10 +669,15 @@ export function useGroups() {
     commit()
 
     const aiMember = findMember(g, AI_BOT_ID)
-    if (aiMember && c.aiAccess && hasPerm(g, meId.value, 'USE_AI') && (AI_MENTION.test(text) || isAIChannel(c))) {
+    if (opts.autoReply !== false && aiMember && c.aiAccess && hasPerm(g, meId.value, 'USE_AI') && (AI_MENTION.test(text) || isAIChannel(c))) {
       scheduleAIReply(g, c, text, opts.threadParentId ?? null)
     }
     return ok(message)
+  }
+
+  /** Khung chat đơn giản chỉ gửi văn bản, không kích hoạt trợ lý AI. */
+  function sendTextMessage(groupId: string, channelId: string, text: string): ActionResult<Message> {
+    return sendMessage(groupId, channelId, text, { autoReply: false })
   }
 
   function editMessage(messageId: string, text: string): ActionResult<Message> {
@@ -1077,6 +1083,7 @@ export function useGroups() {
     createCategory,
     canPost,
     sendMessage,
+    sendTextMessage,
     editMessage,
     deleteMessage,
     canModerateMessage,

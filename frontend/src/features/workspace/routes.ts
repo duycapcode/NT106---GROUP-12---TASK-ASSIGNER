@@ -59,8 +59,7 @@ export const workspaceRoutes: RouteRecordRaw[] = [
       {
         path: 'team/:groupId/settings/:section?',
         name: 'team-settings',
-        component: () => import('./groups/views/GroupSettingsView.vue'),
-        meta: { title: 'Cài đặt nhóm', nav: 'team', fill: true, view: 'group-settings' },
+        redirect: (to) => ({ name: 'team-channel', params: { groupId: to.params.groupId } }),
       },
       {
         path: 'reports',
